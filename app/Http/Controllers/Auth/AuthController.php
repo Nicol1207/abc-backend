@@ -125,20 +125,8 @@ class AuthController extends Controller
             ],
             [
                 'type' => 1,
-                'label' => 'Imágenes',
-                'route' => '/images',
-                'icon' => 2,
-            ],
-            [
-                'type' => 1,
-                'label' => 'Videos',
-                'route' => '/video',
-                'icon' => 3,
-            ],
-            [
-                'type' => 1,
-                'label' => 'Texto',
-                'route' => '/text',
+                'label' => 'Mis Temas',
+                'route' => '/student_themes',
                 'icon' => 4,
             ],
             [

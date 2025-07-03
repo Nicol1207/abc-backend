@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
 class TeacherController extends Controller
@@ -399,58 +400,84 @@ class TeacherController extends Controller
 
     public function create_content(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'id_tema_fk' => 'required|string',
-            'id_tipocontenido_fk' => 'required|integer',
-            'contenido' => 'required|string',
-            'file' => 'nullable|file|max:512000',
-        ]);
+        $tipo = $request->input('id_tipocontenido_fk');
+        $mimeRules = [
+            1 => 'jpeg,png,jpg,gif', // imágenes
+            2 => 'mp4,avi,mov',      // videos
+            3 => 'txt',              // textos
+            4 => 'doc,docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document', // docx
+        ];
 
-        if ($validator->fails()) {
-            return response()->json([
-                'message' => "Verifique los datos solicitados o suba un archivo mas pequeño",
-                'errors' => $validator->errors(),
-            ], 400);
-        }
-
-        $path = '';
         $subFolder = '';
-
-        if ($request->input('id_tipocontenido_fk') == 1) {
+        if ($tipo == 1) {
             $subFolder = 'images';
-        } elseif ($request->input('id_tipocontenido_fk') == 2) {
+        } elseif ($tipo == 2) {
             $subFolder = 'videos';
-        } elseif ($request->input('id_tipocontenido_fk') == 3) {
+        } elseif ($tipo == 3) {
             $subFolder = 'texts';
+        } elseif ($tipo == 4) {
+            $subFolder = 'docs';
         } else {
             return response()->json([
                 'message' => "Tipo de contenido no soportado",
             ], 400);
         }
 
-        if ($request->hasFile('file')) {
-            $originalName = $request->file('file')->getClientOriginalName();
+        $mime = isset($mimeRules[$tipo]) ? $mimeRules[$tipo] : '';
+        $validator = Validator::make($request->all(), [
+            'id_tema_fk' => 'required|string',
+            'id_tipocontenido_fk' => 'required|integer',
+            'contenido' => 'required|string',
+            'file' => 'nullable|file|max:524288' . ($mime ? '|mimes:' . $mime : ''),
+        ]);
 
-            $sanitizedName = str_replace(' ', '_', $originalName);
-
-            $sanitizedName = preg_replace('/[^A-Za-z0-9.\-_]/', '', $sanitizedName);
-
-            $filename = time() . '_' . $sanitizedName;
-
-            $path = $request->file('file')->storeAs('contents/' . $subFolder, $filename, 'public');
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => "Verifique los datos solicitados o suba un archivo más pequeño o con formato permitido",
+                'errors' => $validator->errors(),
+            ], 400);
         }
 
+        if ($request->hasFile('file')) {
+            $originalName = $request->file('file')->getClientOriginalName();
+            $sanitizedName = str_replace(' ', '_', $originalName);
+            $sanitizedName = preg_replace('/[^A-Za-z0-9.\-_]/', '', $sanitizedName);
+            $filename = time() . '_' . $sanitizedName;
+            $path = $request->file('file')->storeAs('contents/' . $subFolder, $filename, 'public');
+        }
 
         $contenido = Contenido::create([
             'titulo' => $request->input('contenido'),
             'url' => $path,
-            'id_tipocontenido_fk' => $request->input('id_tipocontenido_fk'),
+            'id_tipocontenido_fk' => $tipo,
             'id_tema_fk' => $request->input('id_tema_fk'),
             'status_id' => 1
         ]);
 
         return response()->json([
             'message' => "Creado correctamente",
+        ]);
+    }
+
+    public function delete_content(Request $request, int $id)
+    {
+        $content = Contenido::find($id);
+
+        if (!$content) {
+            return response()->json([
+                'message' => 'Contenido no encontrado',
+            ], 404);
+        }
+
+        // Eliminar el archivo del sistema de archivos si existe
+        if ($content->url && Storage::disk('public')->exists($content->url)) {
+            Storage::disk('public')->delete($content->url);
+        }
+
+        $content->delete();
+
+        return response()->json([
+            'message' => 'Contenido eliminado correctamente',
         ]);
     }
 }
