@@ -199,25 +199,20 @@ class StudentController extends Controller
         $contenidoUsuario = ContenidoUsuario::where('id_usuario_fk', $student->id)->where('id_contenido_fk', $content->id_contenido)->first();
 
         if (!$contenidoUsuario) {
-            // If the content has not been viewed by the student, create a new record
-            $contenidoUsuario = new ContenidoUsuario();
-            $contenidoUsuario->id_usuario_fk = $student->id;
-            $contenidoUsuario->id_contenido_fk = $content->id_contenido;
-            $contenidoUsuario->created_at = now();
-            $contenidoUsuario->updated_at = now();
-            $contenidoUsuario->save();
-
             $recompensaEstudiante = new RecompensaEstudiante();
             $recompensaEstudiante->id_usuario_fk = $student->id;
             $recompensaEstudiante->id_recompensa_fk = 1;
             $recompensaEstudiante->cantidad = 1; // Assuming a fixed reward of 1 point for viewing content
             $recompensaEstudiante->save();
-        } else {
-            // If it has been viewed, you might want to update the timestamp or other fields
-            // For example, updating the last viewed timestamp
-            $contenidoUsuario->updated_at = now();
-            $contenidoUsuario->save();
         }
+
+        // If the content has not been viewed by the student, create a new record
+        $contenidoUsuario = new ContenidoUsuario();
+        $contenidoUsuario->id_usuario_fk = $student->id;
+        $contenidoUsuario->id_contenido_fk = $content->id_contenido;
+        $contenidoUsuario->created_at = now();
+        $contenidoUsuario->updated_at = now();
+        $contenidoUsuario->save();
 
         // Assuming you want to return the content details
         return response()->json([

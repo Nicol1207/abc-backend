@@ -13,6 +13,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('sidebar', [\App\Http\Controllers\Auth\AuthController::class, 'sidebar']);
     Route::get('tiempo-uso', [\App\Http\Controllers\Auth\AuthController::class, 'tiempoTotalUso']);
 
+    Route::get('dashboard', [\App\Http\Controllers\Admin\AdminController::class, 'dashboard']);
     Route::get('courses', [\App\Http\Controllers\Admin\AdminController::class, 'index_courses']);
     Route::post('courses', [\App\Http\Controllers\Admin\AdminController::class, 'create_course']);
     Route::post('course/students', [\App\Http\Controllers\Admin\AdminController::class, 'add_students_to_course']);

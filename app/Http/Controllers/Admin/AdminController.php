@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Course;
 use App\Models\CourseStudent;
+use App\Models\RecompensaEstudiante;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
@@ -15,6 +16,61 @@ use Illuminate\Support\Facades\Hash;
 class AdminController extends Controller
 {
     //
+    public function dashboard(Request $request)
+    {
+        // Total de profesores (role_id = 2)
+        $cantidadProfesores = \App\Models\User::where('role_id', 2)->count();
+        // Total de cursos activos
+        $cantidadCursos = \App\Models\Course::where('status_id', 1)->count();
+        // Total de estudiantes (role_id = 3)
+        $cantidadEstudiantes = \App\Models\User::where('role_id', 3)->count();
+
+        // Top 5 estudiantes con más accesos (sesiones iniciadas)
+        $estudiantesAccesos = \App\Models\User::where('role_id', 3)
+            ->withCount(['userSessions'])
+            ->orderByDesc('user_sessions_count')
+            ->take(5)
+            ->get(['id', 'name'])
+            ->map(function ($u) {
+                return [
+                    'nombre' => $u->name,
+                    'accesos' => $u->user_sessions_count,
+                ];
+            });
+
+        // Top 10 estudiantes con más puntos (sumatoria de recompensas)
+        $estudiantesPuntos = \App\Models\User::where('role_id', 3)
+            ->get(['id', 'name'])
+            ->map(function ($u) {
+                $puntos = RecompensaEstudiante::where('id_usuario_fk', $u->id)->sum('cantidad');
+                return [
+                    'nombre' => $u->name,
+                    'puntos' => $puntos,
+                ];
+            })
+            ->sortByDesc('puntos')
+            ->take(10)
+            ->values();
+
+        // Materiales más utilizados por cantidad de registros en ContenidoUsuario
+        $materialesUtilizados = \App\Models\ContenidoUsuario::join('contenido', 'contenido_usuario.id_contenido_fk', '=', 'contenido.id_contenido')
+            ->join('tipo_contenido', 'contenido.id_tipocontenido_fk', '=', 'tipo_contenido.id_tipocontenido')
+            ->select('tipo_contenido.descripcion as nombre', DB::raw('COUNT(contenido_usuario.id_contenidousuario) as usos'))
+            ->groupBy('tipo_contenido.descripcion')
+            ->orderByDesc('usos')
+            ->take(4)
+            ->get();
+
+        return response()->json([
+            'cantidadProfesores' => $cantidadProfesores,
+            'cantidadCursos' => $cantidadCursos,
+            'cantidadEstudiantes' => $cantidadEstudiantes,
+            'estudiantesAccesos' => $estudiantesAccesos,
+            'estudiantesPuntos' => $estudiantesPuntos,
+            'materialesUtilizados' => $materialesUtilizados,
+        ]);
+    }
+
     public function index_courses(Request $request)
     {
         $courses = Course::where('status_id', 1)->get();
