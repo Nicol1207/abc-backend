@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Contenido;
 use App\Models\Course;
 use App\Models\CourseStudent;
+use App\Models\RecompensaEstudiante;
 use App\Models\Tema;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -484,6 +485,40 @@ class TeacherController extends Controller
 
         return response()->json([
             'message' => 'Contenido eliminado correctamente',
+        ]);
+    }
+
+    public function asignar_recompensa(Request $request, int $id)
+    {
+        $validator = Validator::make($request->all(), [
+            'cantidad' => 'required|integer',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Verifica los valores solicitados',
+                'error' => $validator->errors()->getMessages(),
+            ], 400);
+        }
+
+        $student = User::find($id);
+
+        if (!$student) {
+            return response()->json([
+                'message' => 'Estudiante no encontrado',
+            ], 404);
+        }
+
+        $recompensaEstudiante = new RecompensaEstudiante();
+        $recompensaEstudiante->id_usuario_fk = $student->id;
+        $recompensaEstudiante->id_recompensa_fk = 1; // Assuming 1 is the ID for the reward type
+        $recompensaEstudiante->cantidad = $request->input('cantidad');
+        $recompensaEstudiante->updated_at = now();
+        $recompensaEstudiante->save();
+
+        return response()->json([
+            'message' => 'Recompensa asignada correctamente',
+            'data' => $student,
         ]);
     }
 }

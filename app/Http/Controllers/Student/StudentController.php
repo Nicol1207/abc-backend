@@ -22,13 +22,15 @@ class StudentController extends Controller
         $course_student = CourseStudent::where('student_id', $user->id)->first();
         $course = Course::find($course_student->course_id);
         $teacher = User::find($course->teacher_id);
+        $recompensas = RecompensaEstudiante::where('id_usuario_fk', $user->id)->sum('cantidad');
 
         return response()->json([
             'message' => 'Student information retrieved successfully',
             'data' => [
                 'user' => $user,
                 'course' => $course,
-                'teacher' => $teacher
+                'teacher' => $teacher,
+                'recompensas' => $recompensas
             ]
         ]);
     }
