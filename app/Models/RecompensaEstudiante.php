@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $id_recompensaestudiante
  * @property int|null $id_recompensa_fk
  * @property int|null $id_usuario_fk
+ * @property int $cantidad
  * 
  * @property Recompensa|null $recompensa
  * @property User|null $user
@@ -28,12 +29,14 @@ class RecompensaEstudiante extends Model
 
 	protected $casts = [
 		'id_recompensa_fk' => 'int',
-		'id_usuario_fk' => 'int'
+		'id_usuario_fk' => 'int',
+		'cantidad' => 'int'
 	];
 
 	protected $fillable = [
 		'id_recompensa_fk',
-		'id_usuario_fk'
+		'id_usuario_fk',
+		'cantidad'
 	];
 
 	public function recompensa()

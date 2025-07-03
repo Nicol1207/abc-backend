@@ -53,7 +53,13 @@ class TeacherController extends Controller
 
     public function index_library(Request $request)
     {
-        $themes = Tema::where('status_id', 1)->get();
+        $user = Auth::user();
+
+        $course = Course::where('teacher_id', $user->id)
+            ->where('status_id', 1) // Assuming 1 means active
+            ->first();
+
+        $themes = Tema::where('course_id', $course->id)->where('status_id', 1)->get();
         $images = Contenido::where('id_tipocontenido_fk', 1)->get();
         $videos = Contenido::where('id_tipocontenido_fk', 2)->get();
         $textos = Contenido::where('id_tipocontenido_fk', 3)->get();

@@ -6,6 +6,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -14,6 +15,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $id_contenidousuario
  * @property int|null $id_usuario_fk
  * @property int|null $id_contenido_fk
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  * 
  * @property User|null $user
  * @property Contenido|null $contenido
@@ -24,7 +27,6 @@ class ContenidoUsuario extends Model
 {
 	protected $table = 'contenido_usuario';
 	protected $primaryKey = 'id_contenidousuario';
-	public $timestamps = false;
 
 	protected $casts = [
 		'id_usuario_fk' => 'int',
