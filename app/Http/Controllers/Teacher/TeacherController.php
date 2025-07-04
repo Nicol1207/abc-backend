@@ -378,15 +378,20 @@ class TeacherController extends Controller
             $documents = []; // Placeholder for documents or other types
 
             foreach ($contents as $content) {
-                // Assuming id_tipocontenido_fk: 1 for images, 2 for videos, 3 for documents
-                if ($content->id_tipocontenido_fk == 1) {
-                    $images[] = $content;
-                } elseif ($content->id_tipocontenido_fk == 2) {
-                    $videos[] = $content;
-                } elseif ($content->id_tipocontenido_fk == 3) {
-                    $documents[] = $content;
+                // Concatenar host si es necesario
+                $url = $content->url;
+                if ($url && !preg_match('/^https?:\/\//i', $url)) {
+                    $url = 'http://localhost:3000/storage/' . ltrim($url, '/');
                 }
-                // Add more conditions for other content types if needed
+                $item = $content->toArray();
+                $item['url'] = $url;
+                if ($content->id_tipocontenido_fk == 1) {
+                    $images[] = $item;
+                } elseif ($content->id_tipocontenido_fk == 2) {
+                    $videos[] = $item;
+                } elseif ($content->id_tipocontenido_fk == 3) {
+                    $documents[] = $item;
+                }
             }
 
             return response()->json([
@@ -408,6 +413,7 @@ class TeacherController extends Controller
     public function create_content(Request $request)
     {
         $tipo = $request->input('id_tipocontenido_fk');
+        $tipoCarga = $request->input('tipoCarga');
         $mimeRules = [
             1 => 'jpeg,png,jpg,gif', // imágenes
             2 => 'mp4,avi,mov',      // videos
@@ -431,12 +437,18 @@ class TeacherController extends Controller
         }
 
         $mime = isset($mimeRules[$tipo]) ? $mimeRules[$tipo] : '';
-        $validator = Validator::make($request->all(), [
+        $rules = [
             'id_tema_fk' => 'required|string',
             'id_tipocontenido_fk' => 'required|integer',
             'contenido' => 'required|string',
-            'file' => 'nullable|file|max:524288' . ($mime ? '|mimes:' . $mime : ''),
-        ]);
+        ];
+        if ($tipoCarga === 'archivo') {
+            $rules['file'] = 'required|file|max:524288' . ($mime ? '|mimes:' . $mime : '');
+        } elseif ($tipoCarga === 'link') {
+            $rules['link'] = 'required|url';
+        }
+
+        $validator = Validator::make($request->all(), $rules);
 
         if ($validator->fails()) {
             return response()->json([
@@ -445,12 +457,15 @@ class TeacherController extends Controller
             ], 400);
         }
 
-        if ($request->hasFile('file')) {
+        $path = null;
+        if ($tipoCarga === 'archivo' && $request->hasFile('file')) {
             $originalName = $request->file('file')->getClientOriginalName();
             $sanitizedName = str_replace(' ', '_', $originalName);
             $sanitizedName = preg_replace('/[^A-Za-z0-9.\-_]/', '', $sanitizedName);
             $filename = time() . '_' . $sanitizedName;
             $path = $request->file('file')->storeAs('contents/' . $subFolder, $filename, 'public');
+        } elseif ($tipoCarga === 'link') {
+            $path = $request->input('link');
         }
 
         $contenido = Contenido::create([
