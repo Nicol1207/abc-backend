@@ -1,37 +1,21 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Http\Request;
 
-Route::get('/', function () {
-    return view('welcome');
-});
-
-Route::get('/contents/images/{filename}', function ($filename) {
-    $path = storage_path('app/public/contents/images/' . $filename);
-
-    if (!file_exists($path)) {
+Route::get('/vtt/{path}', function ($path) {
+    $file = storage_path('app/public/' . $path);
+    if (!file_exists($file)) {
         abort(404);
     }
-
-    return response()->download($path);
-});
-
-Route::get('/contents/videos/{filename}', function ($filename) {
-    $path = storage_path('app/public/contents/videos/' . $filename);
-
-    if (!file_exists($path)) {
-        abort(404);
-    }
-
-    return response()->download($path);
-});
-
-Route::get('/contents/texts/{filename}', function ($filename) {
-    $path = storage_path('app/public/contents/texts/' . $filename);
-
-    if (!file_exists($path)) {
-        abort(404);
-    }
-
-    return response()->download($path);
-});
+    $response = response()->make(file_get_contents($file), 200);
+    $response->header('Content-Type', 'text/vtt');
+    $response->header('Access-Control-Allow-Origin', '*');
+    return $response;
+})->where('path', '.*');
+Route::options('/vtt/{path}', function () {
+    return response('', 204)
+        ->header('Access-Control-Allow-Origin', '*')
+        ->header('Access-Control-Allow-Methods', 'GET, OPTIONS')
+        ->header('Access-Control-Allow-Headers', 'Origin, Content-Type, Accept');
+})->where('path', '.*');

@@ -433,4 +433,73 @@ class AdminController extends Controller
             ],
         ]);
     }
+
+    /**
+     * Agrega un estudiante a un curso activo de un profesor específico.
+     * @param Request $request
+     * @param int $teacher_id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function add_student_by_teacher(Request $request, int $id)
+    {
+        $validator = Validator::make($request->all(), [
+            'first_name' => 'required|string',
+            'last_name' => 'required|string',
+            'document_number' => 'required|string',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Verifica los valores solicitados',
+                'error' => $validator->errors()->getMessages(),
+            ], 400);
+        }
+
+        // Buscar el curso por ID recibido
+        $course = \App\Models\Course::where('status_id', 1)->where('id', $id)->first();
+
+        if (!$course) {
+            return response()->json([
+                'message' => 'Curso no encontrado',
+            ], 404);
+        }
+
+        // Buscar si el estudiante ya existe
+        $student = \App\Models\User::where('email', $request->input('document_number'))->first();
+
+        if ($student) {
+            // Verificar si ya está en el curso
+            $courseStudent = \App\Models\CourseStudent::where('student_id', $student->id)
+                ->where('course_id', $course->id)
+                ->first();
+
+            if ($courseStudent) {
+                return response()->json([
+                    'message' => 'Ya existe ese estudiante en el curso'
+                ], 400);
+            }
+
+            $student->status_id = 1;
+            $student->name = $request->input('first_name') . ' ' . $request->input('last_name');
+            $student->save();
+        } else {
+            $student = \App\Models\User::create([
+                'name' => $request->input('first_name') . ' ' . $request->input('last_name'),
+                'email' => $request->input('document_number'),
+                'role_id' => 3, // 3 = estudiante
+                'password' => \Illuminate\Support\Facades\Hash::make($request->input('document_number')),
+            ]);
+        }
+
+        // Asociar estudiante al curso
+        $courseStudent = \App\Models\CourseStudent::create([
+            'course_id' => $course->id,
+            'student_id' => $student->id,
+        ]);
+
+        return response()->json([
+            'message' => 'Estudiante creado correctamente',
+            'data' => $student,
+        ], 201);
+    }
 }

@@ -81,7 +81,7 @@ class AuthController extends Controller
                 'type' => 1,
                 'label' => 'Inicio',
                 'route' => '/dashboard',
-                'icon' => 0,
+                'icon' => 5,
             ],
 
             [
@@ -135,12 +135,12 @@ class AuthController extends Controller
                 'route' => '/student_themes',
                 'icon' => 4,
             ],
-            [
-                'type' => 1,
-                'label' => 'Actividades',
-                'route' => '/activities',
-                'icon' => 0,
-            ]
+            // [
+            //     'type' => 1,
+            //     'label' => 'Actividades',
+            //     'route' => '/activities',
+            //     'icon' => 0,
+            // ]
         ];
 
         $sidebar = [];

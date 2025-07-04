@@ -43,6 +43,8 @@ class TeacherController extends Controller
                     'email' => $courseStudent->user->email,
                     'status_id' => $courseStudent->user->status_id,
                     'connection_time' => $courseStudent->user->getTiempoTotalUsoLegible(),
+                    'rewards' => RecompensaEstudiante::where('id_usuario_fk', $courseStudent->student_id)
+                        ->sum('cantidad'), // Assuming 'cantidad' is the field for rewards
                 ];
             });
 
