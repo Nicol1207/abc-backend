@@ -378,4 +378,57 @@ class AdminController extends Controller
             ], 500);
         }
     }
+
+    public function courses(Request $request, $id)
+    {
+        if ($id === "all") {
+            // Si el ID es "all", obtenemos todos los cursos activos
+            $courses = Course::where('status_id', 1)->get();
+            return response()->json([
+                'data' => $courses->map(function ($course) {
+                    return [
+                        'id' => $course->id,
+                        'teacher' => User::find($course->teacher_id)->name,
+                        'section' => $course->section,
+                        'status' => $course->status->description,
+                        'students' => CourseStudent::where('course_id', $course->id)
+                            ->get()->map(function ($courseStudent) {
+                                $student = User::find($courseStudent->student_id);
+                                return [
+                                    'id' => $student->id,
+                                    'name' => $student->name,
+                                    'email' => $student->email,
+                                ];
+                            }),
+                    ];
+                }),
+            ]);
+        }
+
+        // Si el ID es un número, obtenemos el curso específico
+        $course = Course::find($id);
+        if (!$course) {
+            return response()->json([
+                'message' => 'Curso no encontrado',
+            ], 404);
+        }
+
+        return response()->json([
+            'data' => [
+                'id' => $course->id,
+                'teacher' => User::find($course->teacher_id)->name,
+                'section' => $course->section,
+                'status' => $course->status->description,
+                'students' => CourseStudent::where('course_id', $course->id)
+                    ->get()->map(function ($courseStudent) {
+                        $student = User::find($courseStudent->student_id);
+                        return [
+                            'id' => $student->id,
+                            'name' => $student->name,
+                            'email' => $student->email,
+                        ];
+                    }),
+            ],
+        ]);
+    }
 }
