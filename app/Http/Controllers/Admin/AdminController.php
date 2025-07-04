@@ -348,4 +348,34 @@ class AdminController extends Controller
             ], 500);
         }
     }
+
+    public function rewards_by_courses(Request $request, $id)
+    {
+        try {
+            // Obtener todos los estudiantes del curso
+            $students = \App\Models\CourseStudent::where('course_id', $id)
+                ->with('user')
+                ->get();
+
+            $result = $students->map(function ($cs) {
+                $user = $cs->user;
+                $total_puntos = \App\Models\RecompensaEstudiante::where('id_usuario_fk', $user->id)->sum('cantidad');
+                return [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'total_puntos' => $total_puntos,
+                ];
+            });
+
+            return response()->json([
+                'data' => $result
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al obtener las recompensas',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
 }

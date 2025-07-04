@@ -97,6 +97,12 @@ class AuthController extends Controller
                 'route' => '/teachers',
                 'icon' => 0,
             ],
+            [
+                'type' => 1,
+                'label' => 'Reportes',
+                'route' => '/reports',
+                'icon' => 6,
+            ]
 
         ];
 
