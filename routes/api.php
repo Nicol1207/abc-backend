@@ -24,6 +24,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('teachers/{id}', [\App\Http\Controllers\Admin\AdminController::class, 'delete_teacher']);
     Route::get('reports/rewards/{id}', [\App\Http\Controllers\Admin\AdminController::class, 'rewards_by_courses']);
     Route::get('reports/courses/{id}', [\App\Http\Controllers\Admin\AdminController::class, 'courses']);
+    Route::get('reports/students/{id}', [\App\Http\Controllers\Admin\AdminController::class, 'students_by_course']);
 
     Route::get('teacher/{id}/students', [\App\Http\Controllers\Teacher\TeacherController::class, 'index_students']);
     Route::get('library', [\App\Http\Controllers\Teacher\TeacherController::class, 'index_library']);

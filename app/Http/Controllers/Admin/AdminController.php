@@ -398,6 +398,7 @@ class AdminController extends Controller
                                     'id' => $student->id,
                                     'name' => $student->name,
                                     'email' => $student->email,
+                                    'time' => $student->getTiempoTotalUsoLegible(),
                                 ];
                             }),
                     ];
@@ -426,6 +427,7 @@ class AdminController extends Controller
                             'id' => $student->id,
                             'name' => $student->name,
                             'email' => $student->email,
+                            'time' => $student->getTiempoTotalUsoLegible(),
                         ];
                     }),
             ],
