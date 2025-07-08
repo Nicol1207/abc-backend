@@ -24,13 +24,17 @@ class StudentController extends Controller
         $teacher = User::find($course->teacher_id);
         $recompensas = RecompensaEstudiante::where('id_usuario_fk', $user->id)->sum('cantidad');
 
+        // Obtener una frase aleatoria
+        $frase = \App\Models\Frase::inRandomOrder()->first();
+
         return response()->json([
             'message' => 'Student information retrieved successfully',
             'data' => [
                 'user' => $user,
                 'course' => $course,
                 'teacher' => $teacher,
-                'recompensas' => $recompensas
+                'recompensas' => $recompensas,
+                'frase' => $frase
             ]
         ]);
     }
@@ -118,15 +122,20 @@ class StudentController extends Controller
             $documents = []; // Placeholder for documents or other types
 
             foreach ($contents as $content) {
-                // Assuming id_tipocontenido_fk: 1 for images, 2 for videos, 3 for documents
-                if ($content->id_tipocontenido_fk == 1) {
-                    $images[] = $content;
-                } elseif ($content->id_tipocontenido_fk == 2) {
-                    $videos[] = $content;
-                } elseif ($content->id_tipocontenido_fk == 3) {
-                    $documents[] = $content;
+                // Concatenar host si es necesario
+                $url = $content->url;
+                if ($url && !preg_match('/^https?:\/\//i', $url)) {
+                    $url = 'http://localhost:3000/storage/' . ltrim($url, '/');
                 }
-                // Add more conditions for other content types if needed
+                $item = $content->toArray();
+                $item['url'] = $url;
+                if ($content->id_tipocontenido_fk == 1) {
+                    $images[] = $item;
+                } elseif ($content->id_tipocontenido_fk == 2) {
+                    $videos[] = $item;
+                } elseif ($content->id_tipocontenido_fk == 3) {
+                    $documents[] = $item;
+                }
             }
 
             return response()->json([

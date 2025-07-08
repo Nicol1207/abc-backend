@@ -183,6 +183,7 @@ class TeacherController extends Controller
                 'email' => $request->input('document_number'),
                 'role_id' => 3, // Assuming 3 is the role for students
                 'password' => Hash::make($request->input('document_number')), // Default password is the document
+                'status_id' => 1, // Assuming 1 means active
             ]);
         }
 

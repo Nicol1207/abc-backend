@@ -19,11 +19,11 @@ class AdminController extends Controller
     public function dashboard(Request $request)
     {
         // Total de profesores (role_id = 2)
-        $cantidadProfesores = \App\Models\User::where('role_id', 2)->count();
+        $cantidadProfesores = \App\Models\User::where('role_id', 2)->where('status_id', 1)->count();
         // Total de cursos activos
         $cantidadCursos = \App\Models\Course::where('status_id', 1)->count();
         // Total de estudiantes (role_id = 3)
-        $cantidadEstudiantes = \App\Models\User::where('role_id', 3)->count();
+        $cantidadEstudiantes = \App\Models\User::where('role_id', 3)->where('status_id', 1)->count();
 
         // Top 5 estudiantes con más accesos (sesiones iniciadas)
         $estudiantesAccesos = \App\Models\User::where('role_id', 3)
@@ -173,6 +173,7 @@ class AdminController extends Controller
                 'name' => $request->name,
                 'email' => $request->document,
                 'password' => Hash::make($request->document),
+                'status_id' => 1, // Asumiendo que 1 es el estado activo
             ]);
 
             $courseStudent = CourseStudent::create([
@@ -455,6 +456,7 @@ class AdminController extends Controller
             ], 400);
         }
 
+
         // Buscar el curso por ID recibido
         $course = \App\Models\Course::where('status_id', 1)->where('id', $id)->first();
 
@@ -488,6 +490,7 @@ class AdminController extends Controller
                 'email' => $request->input('document_number'),
                 'role_id' => 3, // 3 = estudiante
                 'password' => \Illuminate\Support\Facades\Hash::make($request->input('document_number')),
+                'status_id' => 1, // Asumiendo que 1 es el estado activo
             ]);
         }
 
