@@ -427,8 +427,7 @@ class TeacherController extends Controller
         $mimeRules = [
             1 => 'jpeg,png,jpg,gif', // imágenes
             2 => 'mp4,avi,mov',      // videos
-            3 => 'txt',              // textos
-            4 => 'doc,docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document', // docx
+            4 => 'txt,doc,docx,pdf,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document', // docx y pdf
         ];
 
         $subFolder = '';
@@ -696,6 +695,35 @@ class TeacherController extends Controller
         return response()->json([
             'message' => "Actividad creada correctamente",
             'data' => $activity,
+        ]);
+    }
+
+    public function delete_theme(Request $request, int $id)
+    {
+        $theme = Tema::find($id);
+
+        if (!$theme) {
+            return response()->json([
+                'message' => 'Tema no encontrado',
+            ], 404);
+        }
+
+        // Eliminar contenidos asociados al tema
+        $contents = Contenido::where('id_tema_fk', $theme->id_temas)->get();
+        foreach ($contents as $content) {
+            if ($content->url && Storage::disk('public')->exists($content->url)) {
+                Storage::disk('public')->delete($content->url);
+            }
+            $content->status_id = 2; // Assuming 2 means inactive
+            $content->save();
+        }
+
+        // Eliminar el tema
+        $theme->status_id = 2; // Assuming 2 means inactive
+        $theme->save();
+
+        return response()->json([
+            'message' => 'Tema eliminado correctamente',
         ]);
     }
 }

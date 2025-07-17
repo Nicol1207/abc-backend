@@ -49,7 +49,7 @@ class AdminController extends Controller
                 ];
             })
             ->sortByDesc('puntos')
-            ->take(10)
+            ->take(5)
             ->values();
 
         // Materiales más utilizados por cantidad de registros en ContenidoUsuario

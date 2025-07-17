@@ -102,6 +102,12 @@ class AuthController extends Controller
                 'label' => 'Reportes',
                 'route' => '/reports',
                 'icon' => 6,
+            ],
+            [
+                'type' => 1,
+                'label' => 'Manual de Usuario',
+                'route' => '/user_manual',
+                'icon' => 3,
             ]
 
         ];
@@ -124,6 +130,12 @@ class AuthController extends Controller
                 'label' => 'Actividades',
                 'route' => '/activities',
                 'icon' => 2,
+            ],
+            [
+                'type' => 1,
+                'label' => 'Manual de Usuario',
+                'route' => '/user_manual',
+                'icon' => 3,
             ]
         ];
 
@@ -146,6 +158,12 @@ class AuthController extends Controller
                 'label' => 'Actividades',
                 'route' => '/activities',
                 'icon' => 0,
+            ],
+            [
+                'type' => 1,
+                'label' => 'Manual de Usuario',
+                'route' => '/user_manual',
+                'icon' => 3,
             ]
         ];
 

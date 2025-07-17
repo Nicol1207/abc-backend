@@ -41,6 +41,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('teacher/asignar_recompensa/{id}', [\App\Http\Controllers\Teacher\TeacherController::class, 'asignar_recompensa']);
     Route::get('teacher/activities', [\App\Http\Controllers\Teacher\TeacherController::class, 'index_activities']);
     Route::post('teacher/activities', [\App\Http\Controllers\Teacher\TeacherController::class, 'create_activity']);
+    Route::delete('teacher/themes/{id}', [\App\Http\Controllers\Teacher\TeacherController::class, 'delete_theme']);
 
     Route::get('student', [\App\Http\Controllers\Student\StudentController::class, 'index_student']);
     Route::get('student/contents/{id}', [\App\Http\Controllers\Student\StudentController::class, 'get_contents_by_theme']);
