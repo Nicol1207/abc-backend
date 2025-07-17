@@ -53,4 +53,5 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('activities/wordsearch/{id}', [\App\Http\Controllers\Student\StudentController::class, 'get_wordsearch']);
     Route::get('activities/crossword/{id}', [\App\Http\Controllers\Student\StudentController::class, 'get_crossword']);
+    Route::get('activities/memory/{id}', [\App\Http\Controllers\Student\StudentController::class, 'get_memory']);
 });

@@ -302,4 +302,40 @@ class StudentController extends Controller
             'words' => $crossword_words
         ]);
     }
+
+    public function get_memory(Request $request, $id)
+    {
+        $activity = \App\Models\Activity::find($id);
+
+        if (!$activity) {
+            return response()->json([
+                'message' => 'Actividad no encontrada.',
+            ], 404);
+        }
+
+        // Se asegura que la actividad sea del tipo "Memoria"
+        if ($activity->activity_type_id !== 3) { // 3 es el ID para Memoria
+            return response()->json([
+                'message' => 'La actividad no es un juego de Memoria.',
+            ], 400);
+        }
+
+        $memory = \App\Models\Memory::where('activity_id', $activity->id)->first();
+
+        if (!$memory) {
+            return response()->json([
+                'message' => 'Juego de Memoria no encontrado para esta actividad.',
+            ], 404);
+        }
+
+        $memory_words = \App\Models\MemoriesWord::where('memory_id', $memory->id)->get();
+
+        return response()->json([
+            'message' => 'Juego de Memoria recuperado con éxito.',
+            'data' => [
+                'memory' => $memory,
+                'words' => $memory_words
+            ]
+        ]);
+    }
 }
