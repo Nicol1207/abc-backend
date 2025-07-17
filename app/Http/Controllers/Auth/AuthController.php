@@ -119,6 +119,12 @@ class AuthController extends Controller
                 'route' => '/library',
                 'icon' => 1,
             ],
+            [
+                'type' => 1,
+                'label' => 'Actividades',
+                'route' => '/activities',
+                'icon' => 2,
+            ]
         ];
 
         $student_sidebar = [
@@ -135,12 +141,12 @@ class AuthController extends Controller
                 'route' => '/student_themes',
                 'icon' => 4,
             ],
-            // [
-            //     'type' => 1,
-            //     'label' => 'Actividades',
-            //     'route' => '/activities',
-            //     'icon' => 0,
-            // ]
+            [
+                'type' => 1,
+                'label' => 'Actividades',
+                'route' => '/activities',
+                'icon' => 0,
+            ]
         ];
 
         $sidebar = [];

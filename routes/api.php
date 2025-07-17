@@ -50,6 +50,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('student/themes/{theme_id}/videos', [\App\Http\Controllers\Student\StudentController::class, 'get_videos_by_theme']);
     Route::get('student/themes/{theme_id}/texts', [\App\Http\Controllers\Student\StudentController::class, 'get_texts_by_theme']);
     Route::get('student/content/view/{id}', [\App\Http\Controllers\Student\StudentController::class, 'view_content']);
+    Route::post('student/get/reward/{id}', [\App\Http\Controllers\Student\StudentController::class, 'get_reward']);
 
     Route::get('activities/wordsearch/{id}', [\App\Http\Controllers\Student\StudentController::class, 'get_wordsearch']);
     Route::get('activities/crossword/{id}', [\App\Http\Controllers\Student\StudentController::class, 'get_crossword']);

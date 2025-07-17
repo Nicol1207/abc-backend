@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
+use App\Models\Activity;
 use App\Models\Contenido;
 use App\Models\ContenidoUsuario;
 use App\Models\Course;
 use App\Models\CourseStudent;
+use App\Models\RecompensaActividad;
 use App\Models\RecompensaEstudiante;
 use App\Models\Tema;
 use App\Models\User;
@@ -26,6 +28,8 @@ class StudentController extends Controller
         $course = Course::find($course_student->course_id);
         $teacher = User::find($course->teacher_id);
         $recompensas = RecompensaEstudiante::where('id_usuario_fk', $user->id)->sum('cantidad');
+        $recompensas_actividad = RecompensaActividad::where('student_id', $user->id)->sum('cantidad');
+        $recompensa_total = $recompensas + $recompensas_actividad;
 
         // Obtener una frase aleatoria
         $frase = \App\Models\Frase::inRandomOrder()->first();
@@ -36,7 +40,7 @@ class StudentController extends Controller
                 'user' => $user,
                 'course' => $course,
                 'teacher' => $teacher,
-                'recompensas' => $recompensas,
+                'recompensas' => $recompensa_total,
                 'frase' => $frase
             ]
         ]);
@@ -336,6 +340,44 @@ class StudentController extends Controller
                 'memory' => $memory,
                 'words' => $memory_words
             ]
+        ]);
+    }
+
+    public function get_reward(Request $request, $id)
+    {
+        $student = Auth::user();
+        $student = User::where('id', $student->id)->first();
+
+        if ($student->role_id !== 3) { // Assuming role_id 3 is for students
+            return response()->json([
+                'message' => 'El usuario no es estudiante no se le pueden asignar recompensas.',
+            ], 400);
+        }
+
+        $reward = RecompensaActividad::where('student_id', $student->id)
+            ->where('activity_id', $id)
+            ->first();
+
+        if ($reward) {
+            return response()->json([
+                'message' => 'Ya el estudiante obtuvo esta recompensa.',
+            ]);
+        }
+
+        $activity = Activity::where('id', $id)->first();
+
+        $reward = RecompensaActividad::create([
+            'reward_id' => 1, // Assuming 1 is the ID for the reward
+            'student_id' => $student->id,
+            'activity_id' => $id,
+            'cantidad' => $activity->points,
+        ]);
+
+        // Logic to handle the reward retrieval can be added here
+
+        return response()->json([
+            'message' => 'Reward retrieved successfully.',
+            'data' => $reward
         ]);
     }
 }

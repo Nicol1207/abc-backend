@@ -552,6 +552,12 @@ class TeacherController extends Controller
         $teacher = Auth::user();
         $teacher = User::where('id', $teacher->id)->first();
 
+        if ($teacher->role_id === 3) {
+            $course = CourseStudent::where('student_id', $teacher->id)->first();
+            $course = Course::where('id', $course->course_id)->first();
+            $teacher = User::where('id', $course->teacher_id)->first();
+        }
+
         if (!$teacher) {
             return response()->json([
                 'message' => 'Profesor no encontrado',
