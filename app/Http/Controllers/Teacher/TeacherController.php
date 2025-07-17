@@ -3,12 +3,19 @@
 namespace App\Http\Controllers\Teacher;
 
 use App\Http\Controllers\Controller;
+use App\Models\Activity;
 use App\Models\Contenido;
 use App\Models\Course;
 use App\Models\CourseStudent;
+use App\Models\Crossword;
+use App\Models\CrosswordsWord;
+use App\Models\MemoriesWord;
+use App\Models\Memory;
 use App\Models\RecompensaEstudiante;
 use App\Models\Tema;
 use App\Models\User;
+use App\Models\Wordsearch;
+use App\Models\WordsearchWord;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -537,6 +544,152 @@ class TeacherController extends Controller
         return response()->json([
             'message' => 'Recompensa asignada correctamente',
             'data' => $student,
+        ]);
+    }
+
+    public function index_activities(Request $request)
+    {
+        $teacher = Auth::user();
+        $teacher = User::where('id', $teacher->id)->first();
+
+        if (!$teacher) {
+            return response()->json([
+                'message' => 'Profesor no encontrado',
+            ], 404);
+        }
+
+        $activities = Activity::where('teacher_id', $teacher->id)->get();
+
+        if ($activities->isEmpty()) {
+            return response()->json([
+                'message' => 'No hay actividades registradas para este profesor.',
+                'data' => []
+            ], 200);
+        }
+
+        // Mapear actividades con información relevante y tipo
+        $mapped = $activities->map(function ($activity) {
+            // Obtener el tipo de actividad
+            $type = null;
+            if ($activity->activity_type) {
+                $type = $activity->activity_type->description
+                    ?? null;
+            } else if ($activity->activity_type_i) {
+                // Si no hay relación, usar el id
+                switch ($activity->activity_type_i) {
+                    case 1:
+                        $type = 'Sopa de letras';
+                        break;
+                    case 2:
+                        $type = 'Crucigrama';
+                        break;
+                    case 3:
+                        $type = 'Memoria';
+                        break;
+                    default:
+                        $type = 'Desconocido';
+                }
+            }
+            return [
+                'id' => $activity->id,
+                'titulo' => $activity->title,
+                'descripcion' => $activity->description,
+                'tipo' => $type,
+            ];
+        });
+
+        return response()->json([
+            'message' => 'Actividades obtenidas correctamente.',
+            'data' => $mapped,
+        ], 200);
+    }
+
+    public function create_activity(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'activityType' => 'required|integer|in:1,2,3', // 1: Wordsearch, 2: Crossword, 3: Memory
+            'title' => 'required|string',
+            'description' => 'required|string',
+            'points' => 'required|integer',
+            'words' => 'required|array',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Verifica los valores solicitados',
+                'data' => $request->all(),
+                'error' => $validator->errors()->getMessages(),
+            ], 400);
+        }
+
+        $teacher = Auth::user();
+
+        try {
+            DB::beginTransaction();
+            $activity = Activity::create([
+                'activity_type_id' => $request->input('activityType'),
+                'title' => $request->input('title'),
+                'description' => $request->input('description'),
+                'points' => $request->input('points'),
+                'teacher_id' => $teacher->id,
+            ]);
+
+            if ($request->input('activityType') === 1) {
+                // Sopa de letras
+                $wordsearch = Wordsearch::create([
+                    'activity_id' => $activity->id,
+                ]);
+                foreach ($request->input('words') as $word) {
+                    $wordSearchWords = WordsearchWord::create([
+                        'wordsearch_id' => $wordsearch->id,
+                        'english_word' => $word['english'],
+                        'spanish_word' => $word['spanish'],
+                        'emoji' => $word['emoji'],
+                    ]);
+                }
+            } elseif ($request->input('activityType') === 2) {
+                // Crucigrama
+                $crossword = Crossword::create([
+                    'activity_id' => $activity->id,
+                ]);
+                foreach ($request->input('words') as $word) {
+                    $wordCrosswords = CrosswordsWord::create([
+                        'crossword_id' => $crossword->id,
+                        'english_word' => $word['english'],
+                        'spanish_word' => $word['spanish'],
+                        'emoji' => $word['emoji'],
+                    ]);
+                }
+            } elseif ($request->input('activityType') === 3) {
+                // Memoria
+                $memory = Memory::create([
+                    'activity_id' => $activity->id,
+                ]);
+                foreach ($request->input('words') as $word) {
+                    $memoryWords = MemoriesWord::create([
+                        'memory_id' => $memory->id,
+                        'english_word' => $word['english'],
+                        'spanish_word' => $word['spanish'],
+                        'emoji' => $word['emoji'],
+                    ]);
+                }
+            } else {
+                return response()->json([
+                    'message' => 'Tipo de actividad no soportado',
+                ], 400);
+            }
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'message' => 'Error al iniciar la transacción',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+
+        return response()->json([
+            'message' => "Actividad creada correctamente",
+            'data' => $activity,
         ]);
     }
 }

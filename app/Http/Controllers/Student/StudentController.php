@@ -10,6 +10,9 @@ use App\Models\CourseStudent;
 use App\Models\RecompensaEstudiante;
 use App\Models\Tema;
 use App\Models\User;
+use App\Models\Wordsearch;
+use App\Models\WordsearchWord;
+use Doctrine\Inflector\Rules\Word;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -227,6 +230,76 @@ class StudentController extends Controller
         return response()->json([
             'message' => 'Content retrieved successfully.',
             'data' => $content
+        ]);
+    }
+
+    public function get_wordsearch(Request $request, $id)
+    {
+        $activity = \App\Models\Activity::find($id);
+
+        if (!$activity) {
+            return response()->json([
+                'message' => 'Actividad no encontrada.',
+            ], 404);
+        }
+
+        // Se asegura que la actividad sea del tipo "Sopa de Letras"
+        if ($activity->activity_type_id !== 1) { // 1 es el ID para Sopa de Letras
+            return response()->json([
+                'message' => 'La actividad no es una Sopa de Letras.',
+            ], 400);
+        }
+
+        $wordsearch = Wordsearch::where('activity_id', $activity->id)->first();
+
+        if (!$wordsearch) {
+            return response()->json([
+                'message' => 'Sopa de Letras no encontrada para esta actividad.',
+            ], 404);
+        }
+
+        $wordsearch_words = WordsearchWord::where('wordsearch_id', $wordsearch->id)->get();
+
+        return response()->json([
+            'message' => 'Sopa de Letras recuperada con éxito.',
+            'data' => [
+                'wordsearch' => $wordsearch,
+                'words' => $wordsearch_words
+            ]
+        ]);
+    }
+
+    public function get_crossword(Request $request, $id)
+    {
+        $activity = \App\Models\Activity::find($id);
+
+        if (!$activity) {
+            return response()->json([
+                'message' => 'Actividad no encontrada.',
+            ], 404);
+        }
+
+        // Se asegura que la actividad sea del tipo "Crucigrama"
+        if ($activity->activity_type_id !== 2) { // 2 es el ID para Crucigrama
+            return response()->json([
+                'message' => 'La actividad no es un Crucigrama.',
+            ], 400);
+        }
+
+        $crossword = \App\Models\Crossword::where('activity_id', $activity->id)->first();
+
+        if (!$crossword) {
+            return response()->json([
+                'message' => 'Crucigrama no encontrado para esta actividad.',
+            ], 404);
+        }
+
+        $crossword_words = \App\Models\CrosswordsWord::where('crossword_id', $crossword->id)->get();
+
+        return response()->json([
+            'message' => 'Crucigrama recuperado con éxito.',
+            'data' => $crossword,
+            'words' => $crossword_words
         ]);
     }
 }

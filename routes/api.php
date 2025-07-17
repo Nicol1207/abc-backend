@@ -39,6 +39,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('contents', [\App\Http\Controllers\Teacher\TeacherController::class, 'create_content']);
     Route::delete('contents/{id}', [\App\Http\Controllers\Teacher\TeacherController::class, 'delete_content']);
     Route::post('teacher/asignar_recompensa/{id}', [\App\Http\Controllers\Teacher\TeacherController::class, 'asignar_recompensa']);
+    Route::get('teacher/activities', [\App\Http\Controllers\Teacher\TeacherController::class, 'index_activities']);
+    Route::post('teacher/activities', [\App\Http\Controllers\Teacher\TeacherController::class, 'create_activity']);
 
     Route::get('student', [\App\Http\Controllers\Student\StudentController::class, 'index_student']);
     Route::get('student/contents/{id}', [\App\Http\Controllers\Student\StudentController::class, 'get_contents_by_theme']);
@@ -48,4 +50,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('student/themes/{theme_id}/videos', [\App\Http\Controllers\Student\StudentController::class, 'get_videos_by_theme']);
     Route::get('student/themes/{theme_id}/texts', [\App\Http\Controllers\Student\StudentController::class, 'get_texts_by_theme']);
     Route::get('student/content/view/{id}', [\App\Http\Controllers\Student\StudentController::class, 'view_content']);
+
+    Route::get('activities/wordsearch/{id}', [\App\Http\Controllers\Student\StudentController::class, 'get_wordsearch']);
+    Route::get('activities/crossword/{id}', [\App\Http\Controllers\Student\StudentController::class, 'get_crossword']);
 });
